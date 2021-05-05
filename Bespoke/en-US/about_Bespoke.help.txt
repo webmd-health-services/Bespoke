@@ -1,0 +1,8 @@
+TOPIC
+    about_Bespoke
+
+SHORT DESCRIPTION
+    Bespoke is a PowerShell module for...
+
+LONG DESCRIPTION
+    The Bespoke PowerShell module...
