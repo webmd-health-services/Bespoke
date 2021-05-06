@@ -43,29 +43,13 @@ function Install-ZipFile
             return 
         }
 
-        [uri]$url = $package.url
-        $zipPath = Join-Path -Path $cachepath -ChildPath $url.Segments[-1]
-        if( -not (Test-Path -Path $zipPath) -or `
-            ($package.checksum -and (Get-FileHash -Path $zipPath).Hash -ne $package.checksum) )
-        {
-            Write-Debug -Message ("$($url) -> $($zipPath)")
-            Invoke-WebRequest -Uri $url -OutFile $zipPath
-            $hash = Get-FileHash -Path $zipPath
-            if( $package.checksum -and $hash.Hash -ne $package.checksum )
-            {
-                $msg = "ZIP archive ""$($zipPath)"" checksum ""$($hash.Hash.ToLowerInvariant())"" doesn't match " +
-                       "checksum ""$($package.checksum)""."
-                Write-Error -Message $msg
-                return
-            }
-        }
-
+        $zip = Save-BespokeUrl -Url $package.url -Checksum $package.checksum -Extension '.zip'
         $extractPath = Join-Path -Path $cachePath -ChildPath ([IO.Path]::GetRandomFileName())
         New-Item -Path $extractPath -ItemType 'Directory' | Out-Null
 
         try 
         {
-            $archive = [IO.Compression.ZipFile]::OpenRead($zipPath)
+            $archive = [IO.Compression.ZipFile]::OpenRead($zip.FullName)
             try
             {
                 [IO.Compression.ZipFileExtensions]::ExtractToDirectory($archive, $extractPath)

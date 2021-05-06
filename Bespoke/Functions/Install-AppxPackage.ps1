@@ -22,12 +22,12 @@ function Install-AppxPackage
             'checksum' = '';
         }
 
-        $package = $InputObject | ConvertTo-BespokeItem -DefaultPropertyName 'name' -Properties $properties
+        $package = $InputObject | ConvertTo-BespokeItem -DefaultPropertyName 'name' -Property $properties
 
         if( Get-AppxPackage -Name $package.name )
         {
-            Write-Information "      $($name)"
-            continue
+            Write-Information "      $($package.name)"
+            return
         }
 
         $extension = '.appx'
@@ -37,30 +37,8 @@ function Install-AppxPackage
         }
 
         Write-Information "    + $($name)"
-        $appPkgFilePath = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($name)$($extension)"
-        try
-        {
-            Invoke-WebRequest -Uri $url -OutFile $appPkgFilePath
-            if( $package.checksum )
-            {
-                $hash = Get-FileHash -Path $appPkgFilePath
-                if( $package.checksum -ne $hash.Hash )
-                {
-                    $msg = "Download of Windows Store package ""$($package.name)"" failed: downloaded file checksum " +
-                           """$($hash.Hash.ToLowerInvariant())"" doesn't match expected checksum " +
-                           """$($package.checksum.ToLowerInvariant())""."
-                    Write-Error -Message $msg
-                    return
-                }
-            }
-            
-            Add-AppxPackage -Path $appPkgFilePath
-        }
-        finally
-        {
-            Remove-Item -Path $appPkgFilePath -ErrorAction Ignore
-        }
-
+        $appPkg = Save-BespokeUrl -Url $url -Checksum $package.checksum -Extension $extension
+        Add-AppxPackage -Path $appPkg.FullName
     }
         
 }
