@@ -20,6 +20,8 @@ Set-StrictMode -Version 'Latest'
 # module in development has its functions in the Functions directory.
 $moduleRoot = $PSScriptRoot
 
+New-Alias -Name 'bespoke' -Value 'Invoke-Bespoke'
+
 # Store each of your module's functions in its own file in the Functions 
 # directory. On the build server, your module's functions will be appended to 
 # this file, so only dot-source files that exist on the file system. This allows

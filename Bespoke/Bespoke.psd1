@@ -76,6 +76,8 @@
 
     # Functions to export from this module. Only list public function here.
     FunctionsToExport = @(
+        'Install-BespokeFileLink',
+        'Invoke-Bespoke'
     )
 
     # Cmdlets to export from this module. By default, you get a script module, so there are no cmdlets.
@@ -85,7 +87,7 @@
     VariablesToExport = @()
 
     # Aliases to export from this module. Don't create/export aliases. It can pollute your user's sessions.
-    AliasesToExport = @()
+    AliasesToExport = @('bespoke')
 
     # DSC resources to export from this module
     # DscResourcesToExport = @()
