@@ -15,10 +15,33 @@
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
+if( -not (Test-Path -Path 'variable:IsWindows') )
+{
+    $IsWindows = $true
+    $IsLinux = $IsMacOS = $false
+}
+
 # Functions should use $moduleRoot as the relative root from which to find
 # things. A published module has its function appended to this file, while a 
 # module in development has its functions in the Functions directory.
 $moduleRoot = $PSScriptRoot
+$localDataPath = ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData))
+$dataDirName = 'Bespoke'
+if( -not $IsWindows )
+{
+    $dataDirName = $dataDirName.ToLowerInvariant()
+}
+
+$cacheDirname = 'Cache'
+if( -not $IsWindows )
+{
+    $cacheDirName = $cacheDirName.ToLowerInvariant()
+}
+
+$dataPath = Join-path -Path $localDataPath -ChildPath $dataDirName
+$cachePath = Join-Path -Path $dataPath -ChildPath $cacheDirName
+
+Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
 
 New-Alias -Name 'bespoke' -Value 'Invoke-Bespoke'
 

@@ -24,6 +24,11 @@ function Invoke-Bespoke
         $IsMacOS = $false
     }
 
+    if( -not (Test-Path -Path $cachePath) )
+    {
+        New-Item -Path $cachePath -ItemType 'Directory' -Force | Out-Null
+    }
+    
     $bespokeRoot =
         Join-Path -Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)) -ChildPath '.bespoke'
 
@@ -116,6 +121,12 @@ function Invoke-Bespoke
         {
             $packagesConfig.powershellModules | Where-Object { Test-BespokeItem $_ } | Install-PowerShellModule
         }
+    }
+
+    # TODO: Zip files. And zip files that contain installers.
+    if( $packagesConfig | Get-Member -Name 'zip' )
+    {
+        $packagesConfig.zip | Where-Object { Test-BespokeItem $_ } | Install-ZipFile
     }
 
     if( $bespokeConfig | Get-Member -Name 'profiles' )

@@ -11,7 +11,7 @@ function Install-AppxPackage
     {
         Set-StrictMode -Version 'Latest'
 
-        Write-Information 'Windows Store Packages'
+        Write-Information 'Windows Store'
     }
 
     process
