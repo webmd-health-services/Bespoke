@@ -23,7 +23,8 @@ function Save-BespokeUrl
     $urlBytes = [Text.Encoding]::UTF8.GetBytes($Url.ToString())
     $hasher = [Security.Cryptography.HashAlgorithm]::Create('sha512')
     $hashBytes = $hasher.ComputeHash($urlBytes)
-    $urlHash = [BitConverter]::ToString($hashBytes).Substring(0,8).ToLowerInvariant()
+    $urlHash = [BitConverter]::ToString($hashBytes).ToLowerInvariant() -replace '-',''
+    $urlHash = $urlHash.Substring(0, 8)
 
     if( $Extension -and $Extension[0] -ne '.' )
     {
@@ -42,15 +43,16 @@ function Save-BespokeUrl
 
     if( (Test-Path -Path $outFilePath) )
     {
+        $outFile = Get-Item -Path $outFilePath
         $hash = Get-FileHash -Path $outFilePath -Algorithm $algorithm
         if( -not $Checksum )
         {
-            return
+            return $outFile
         }
 
         if( $hash.Hash -eq $Checksum )
         {
-            return
+            return $outFile
         }
     }
 
@@ -76,7 +78,7 @@ function Save-BespokeUrl
     {
         $msg = "Checksum of ""$($Url)"" is ""$($hash.Hash.ToLowerInvariant())"". Please add this to " +
                'your bespoke.json.'
-        Write-Warning 
+        Write-Warning -Message $msg
 
     }
 

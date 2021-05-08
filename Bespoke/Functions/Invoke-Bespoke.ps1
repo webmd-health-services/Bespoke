@@ -124,6 +124,11 @@ function Invoke-Bespoke
         {
             $packagesConfig.zip | Where-Object { Test-BespokeItem $_ } | Install-ZipFile
         }
+
+        if( $packagesConfig | Get-Member -Name 'exe' )
+        {
+            $packagesConfig.exe | Where-Object { Test-BespokeItem $_ } | Install-BespokeExe
+        }
     }
 
     if( $bespokeConfig | Get-Member -Name 'profiles' )

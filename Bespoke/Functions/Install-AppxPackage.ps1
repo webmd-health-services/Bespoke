@@ -20,6 +20,7 @@ function Install-AppxPackage
             'url' = '';
             'isBundle' = $false;
             'checksum' = '';
+            'externalPackages' = ''
         }
 
         $package = $InputObject | ConvertTo-BespokeItem -DefaultPropertyName 'name' -Property $properties
@@ -36,9 +37,16 @@ function Install-AppxPackage
             $extension = '.appxbundle'
         }
 
-        Write-Information "    + $($name)"
-        $appPkg = Save-BespokeUrl -Url $url -Checksum $package.checksum -Extension $extension
-        Add-AppxPackage -Path $appPkg.FullName
+        Write-Information "    + $($package.name)"
+        $appPkg = Save-BespokeUrl -Url $package.url -Checksum $package.checksum -Extension $extension
+
+        $conditionalParams = @{}
+        if( $package.externalPackages )
+        {
+            $conditionalParams['ExternalPackages'] = $package.externalPackages
+        }
+
+        Add-AppxPackage -Path $appPkg.FullName @conditionalParams
     }
         
 }

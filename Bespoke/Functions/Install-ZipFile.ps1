@@ -74,22 +74,8 @@ function Install-ZipFile
                 '.exe'
                 {
                     Write-Information "    + $($installerPath | Split-Path -Leaf)"
-                    $processName = [IO.Path]::GetFileNameWithoutExtension($installerPath)
-                    & $installerPath
-                    $installerProcess = Get-Process -Name $processName -ErrorAction Ignore
-                    if( $installerProcess )
-                    {
-                        # Must read handle to get an exit code.
-                        $installerProcess.Handle | Out-Null
-                        $installerProcess.WaitForExit()
-                        if( $installerProcess.ExitCode )
-                        {
-                            $msg = "Installer ""$($installerPath | Split-Path -Leaf)"" returned non-zero exit code " +
-                                    """$($installerProcess.Exitcode)""."
-                            Write-Error -Message $msg
-                            return
-                        }
-                    }
+                    Invoke-BespokeExe -Path $installerPath
+                    return
                 }
                 default
                 {
