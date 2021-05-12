@@ -14,7 +14,7 @@ function Save-BespokeUrl
     Set-StrictMode -Version 'Latest'
 
     $algorithm = 'sha512'
-    if( $Checksum -match '^([^:]+:)(.+)$' )
+    if( $Checksum -match '^([^:]+):(.+)$' )
     {
         $algorithm = $Matches[1]
         $Checksum = $Matches[2]

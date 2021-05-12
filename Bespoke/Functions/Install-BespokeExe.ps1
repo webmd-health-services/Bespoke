@@ -22,7 +22,7 @@ function Install-BespokeExe
         }
         $package = $InputObject | ConvertTo-BespokeItem -Property $properties
 
-        if( $package.name -and (Get-CProgramInstallInfo -Name $package.name) )
+        if( $package.programName -and (Get-CProgramInstallInfo -Name $package.programName) )
         {
             Write-Information -Message "      $($package.installer)"
             return

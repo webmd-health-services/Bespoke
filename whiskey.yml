@@ -7,6 +7,11 @@ Build:
 - Version:
     Path: Bespoke\Bespoke.psd1
 
+- GetPowerShellModule:
+    Name: Carbon
+    Version: 2.10.*
+    Path: Bespoke\Modules
+
 # Dot-sourcing files is expensive. Move all functions into .psm1 file to improve import speed. Do this before testing
 # to ensure the module still works.
 - MergeFile:

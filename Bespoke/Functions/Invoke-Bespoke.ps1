@@ -105,9 +105,22 @@ function Invoke-Bespoke
     if( $bespokeConfig | Get-Member 'packages' )
     {
         $packagesConfig = $bespokeConfig.packages
-        if( $IsWindows -and ($packagesConfig | Get-Member 'winget') )
+        if( $IsWindows )
         {
-            $packagesConfig.winget | Where-Object { Test-BespokeItem $_ } | Install-WingetPackage
+            if( ($packagesConfig | Get-Member 'winget') )
+            {
+                $packagesConfig.winget | Where-Object { Test-BespokeItem $_ } | Install-WingetPackage
+            }
+
+            if( $IsWindows -and ($packagesConfig | Get-Member -Name 'appx') )
+            {
+                $packagesConfig.appx | Where-Object { Test-BespokeItem $_ } | Install-AppxPackage
+            }
+        
+            if( $IsWindows -and ($packagesConfig | Get-Member -Name 'msi') )
+            {
+                $packagesConfig.msi | Where-Object { Test-BespokeItem $_ } | Install-BespokeMsi
+            }
         }
 
         if( $packagesConfig | Get-Member 'powershellModules' )
@@ -115,19 +128,14 @@ function Invoke-Bespoke
             $packagesConfig.powershellModules | Where-Object { Test-BespokeItem $_ } | Install-PowerShellModule
         }
 
-        if( $packagesConfig | Get-Member -Name 'appx' )
-        {
-            $packagesConfig.appx | Where-Object { Test-BespokeItem $_ } | Install-AppxPackage
-        }
-    
         if( $packagesConfig | Get-Member -Name 'zip' )
         {
-            $packagesConfig.zip | Where-Object { Test-BespokeItem $_ } | Install-ZipFile
+            #$packagesConfig.zip | Where-Object { Test-BespokeItem $_ } | Install-ZipFile
         }
 
         if( $packagesConfig | Get-Member -Name 'exe' )
         {
-            $packagesConfig.exe | Where-Object { Test-BespokeItem $_ } | Install-BespokeExe
+            #$packagesConfig.exe | Where-Object { Test-BespokeItem $_ } | Install-BespokeExe
         }
     }
 

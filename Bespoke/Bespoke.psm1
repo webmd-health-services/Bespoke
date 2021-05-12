@@ -45,6 +45,12 @@ Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
 
 New-Alias -Name 'bespoke' -Value 'Invoke-Bespoke'
 
+$carbonFunctions = @(
+    'Get-CProgramInstallInfo',
+    'Invoke-CMsi'
+)
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'Modules\Carbon') -Function $carbonFunctions
+
 # Store each of your module's functions in its own file in the Functions 
 # directory. On the build server, your module's functions will be appended to 
 # this file, so only dot-source files that exist on the file system. This allows
