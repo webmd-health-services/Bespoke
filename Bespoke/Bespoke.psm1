@@ -38,8 +38,15 @@ if( -not $IsWindows )
     $cacheDirName = $cacheDirName.ToLowerInvariant()
 }
 
+$tempDirName = 'Temp'
+if( -not $IsWindows )
+{
+    $tempDirName = $tempDirName.ToLowerInvariant()
+}
+
 $dataPath = Join-path -Path $localDataPath -ChildPath $dataDirName
 $cachePath = Join-Path -Path $dataPath -ChildPath $cacheDirName
+$tempPath = Join-Path -Path $dataPath -ChildPath $tempDirName
 
 Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
 
@@ -49,7 +56,17 @@ $carbonFunctions = @(
     'Get-CProgramInstallInfo',
     'Invoke-CMsi'
 )
-Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'Modules\Carbon') -Function $carbonFunctions
+$carbonModulePath = Join-Path -Path $PSScriptRoot -ChildPath 'Modules\Carbon'
+try
+{
+    Import-Module -Name $carbonModulePath -Function $carbonFunctions
+}
+catch
+{
+    Remove-Module -Name 'Carbon' -Force -ErrorAction Ignore
+}
+
+Import-Module -Name $carbonModulePath -Function $carbonFunctions
 
 # Store each of your module's functions in its own file in the Functions 
 # directory. On the build server, your module's functions will be appended to 

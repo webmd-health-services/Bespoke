@@ -27,7 +27,7 @@ function Install-BespokeMsi
         }
         $package = $InputObject | ConvertTo-BespokeItem -Property $properties
 
-        if( $package.programName -and (Get-CProgramInstallInfo -Name $package.programName) )
+        if( $package.programName -and (Get-CProgramInstallInfo -Name $package.programName -ErrorAction SilentlyContinue) )
         {
             Write-Information -Message "      $($package.programName)"
             return
@@ -70,20 +70,8 @@ function Install-BespokeMsi
                     return
                 }
         
-                $extractPath = Join-Path -Path $cachePath -ChildPath ([IO.Path]::GetRandomFileName())
-                New-Item -Path $extractPath -ItemType 'Directory' | Out-Null
+                $extractPath = Expand-BespokeArchive -Path $installer.FullName
 
-                $archive = [IO.Compression.ZipFile]::OpenRead($installer.FullName)
-                try
-                {
-                    [IO.Compression.ZipFileExtensions]::ExtractToDirectory($archive, $extractPath)
-                }
-                finally
-                {
-                    $archive.Dispose()
-                }
-
-                Get-ChildItem $extractPath -Recurse | Out-String | Write-Debug
                 $installerPath = Join-Path -Path $extractPath -ChildPath $package.archiveInstallerPath
                 if( -not (Test-Path -Path $installerPath -PathType Leaf) )
                 {

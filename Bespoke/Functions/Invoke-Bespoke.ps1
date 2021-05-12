@@ -17,10 +17,15 @@ function Invoke-Bespoke
     $InformationPreference = 'Continue'
     $ProgressPreference = 'SilentlyContinue'
 
-    if( -not (Test-Path -Path $cachePath) )
+    foreach( $dataPath in @($cachePath, $tempPath) )
     {
-        New-Item -Path $cachePath -ItemType 'Directory' -Force | Out-Null
+        if( -not (Test-Path -Path $dataPath) )
+        {
+            New-Item -Path $dataPath -ItemType 'Directory' -Force | Out-Null
+        }    
     }
+
+    Get-ChildItem -Path $tempPath | Remove-Item -Recurse -Force -ErrorAction Ignore
 
     $bespokeRoot =
         Join-Path -Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)) -ChildPath '.bespoke'
@@ -130,12 +135,7 @@ function Invoke-Bespoke
 
         if( $packagesConfig | Get-Member -Name 'zip' )
         {
-            #$packagesConfig.zip | Where-Object { Test-BespokeItem $_ } | Install-ZipFile
-        }
-
-        if( $packagesConfig | Get-Member -Name 'exe' )
-        {
-            #$packagesConfig.exe | Where-Object { Test-BespokeItem $_ } | Install-BespokeExe
+            $packagesConfig.zip | Where-Object { Test-BespokeItem $_ } | Install-BespokeZipFile
         }
     }
 

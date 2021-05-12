@@ -13,13 +13,6 @@ function Save-BespokeUrl
 
     Set-StrictMode -Version 'Latest'
 
-    $algorithm = 'sha512'
-    if( $Checksum -match '^([^:]+):(.+)$' )
-    {
-        $algorithm = $Matches[1]
-        $Checksum = $Matches[2]
-    }
-
     $urlBytes = [Text.Encoding]::UTF8.GetBytes($Url.ToString())
     $hasher = [Security.Cryptography.HashAlgorithm]::Create('sha512')
     $hashBytes = $hasher.ComputeHash($urlBytes)
@@ -44,13 +37,12 @@ function Save-BespokeUrl
     if( (Test-Path -Path $outFilePath) )
     {
         $outFile = Get-Item -Path $outFilePath
-        $hash = Get-FileHash -Path $outFilePath -Algorithm $algorithm
         if( -not $Checksum )
         {
             return $outFile
         }
-
-        if( $hash.Hash -eq $Checksum )
+        
+        if( (Test-BespokeFileHash -Path $outFilePath -Checksum $Checksum) )
         {
             return $outFile
         }
@@ -65,21 +57,17 @@ function Save-BespokeUrl
         return
     }
 
-    $hash = Get-Filehash -Path $outFilePath -Algorithm $algorithm
-    if( $Checksum -and $hash.Hash -ne $Checksum )
+    if( $Checksum -and -not (Assert-BespokeFileHash -Path $outFilePath -Checksum $Checksum) )
     {
-        $msg = "Checksum mismatch: the ""$($outFilePath)"" file's checksum ""$($hash.Hash.ToLowerInvariant())"" " +
-               "doesn't match expected ""$($algorithm)"" checksum ""$($Checksum)""."
-        Write-Error -Message $msg
         return
     }
-
+    
     if( -not $Checksum )
     {
+        $hash = Get-FileHash -Path $outFilePath -Algorithm 'SHA512'
         $msg = "Checksum of ""$($Url)"" is ""$($hash.Hash.ToLowerInvariant())"". Please add this to " +
                'your bespoke.json.'
         Write-Warning -Message $msg
-
     }
 
     return Get-Item -Path $outFilePath
