@@ -117,6 +117,11 @@ function Invoke-Bespoke
             $bespokeConfig.fileSystem | Where-Object { Test-BespokeItem $_ } | Install-BespokeFileSystemItem
         }
 
+        if( $bespokeConfig | Get-Member 'env' )
+        {
+            $bespokeConfig.env | Where-Object { Test-BespokeItem $_ } | Set-BespokeEnvironmentVariable
+        }
+
         if( $bespokeConfig | Get-Member 'packages' )
         {
             $packagesConfig = $bespokeConfig.packages

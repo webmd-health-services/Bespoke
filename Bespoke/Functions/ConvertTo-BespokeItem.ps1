@@ -14,7 +14,7 @@ function ConvertTo-BespokeItem
     process
     {
         Set-StrictMode -Version 'Latest'
-        
+
         Write-Debug "[ConvertTo-BespokeItem]  InputObject  [$($InputObject.GetType().Name)]"
         if( $InputObject -is [String] -or $InputObject -is [int] -or $InputObject -is [bool] -or $InputObject -is [DateTime] )
         {
@@ -41,6 +41,11 @@ function ConvertTo-BespokeItem
                 continue
             }
 
+            if( $propertyName -like '$*' )
+            {
+                continue
+            }
+            
             $InputObject |
                 Add-Member -Name $propertyName -MemberType NoteProperty -Value $Property[$propertyName]
         }
