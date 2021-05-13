@@ -97,57 +97,73 @@ function Invoke-Bespoke
         }
     }
 
-    $bespokeConfigPath = Join-Path -Path $bespokeRoot -ChildPath 'bespoke.json'
-    if( -not (Test-Path -Path $bespokeConfigPath) )
+    Push-Location -Path $bespokeRoot
+    $originalPwd = [IO.Directory]::GetCurrentDirectory()
+    [IO.Directory]::SetCurrentDirectory($bespokeRoot)
+    try
     {
-        $msg = "Nothing to do. You're missing a $($bespokeConfigPath) file. See the Bespoke README.md for documentation."
-        Write-Warning -Message $msg
-        return
-    }
-
-    $bespokeConfig = Get-Content -Path $bespokeConfigPath | ConvertFrom-Json
-
-    if( $bespokeConfig | Get-Member 'packages' )
-    {
-        $packagesConfig = $bespokeConfig.packages
-        if( $IsWindows )
+        $bespokeConfigPath = Join-Path -Path $bespokeRoot -ChildPath 'bespoke.json'
+        if( -not (Test-Path -Path $bespokeConfigPath) )
         {
-            if( ($packagesConfig | Get-Member 'winget') )
+            $msg = "Nothing to do. You're missing a $($bespokeConfigPath) file. See the Bespoke README.md for documentation."
+            Write-Warning -Message $msg
+            return
+        }
+
+        $bespokeConfig = Get-Content -Path $bespokeConfigPath | ConvertFrom-Json
+
+        if( $bespokeConfig | Get-Member 'fileSystem' )
+        {
+            $bespokeConfig.fileSystem | Where-Object { Test-BespokeItem $_ } | Install-BespokeFileSystemItem
+        }
+
+        if( $bespokeConfig | Get-Member 'packages' )
+        {
+            $packagesConfig = $bespokeConfig.packages
+            if( $IsWindows )
             {
-                $packagesConfig.winget | Where-Object { Test-BespokeItem $_ } | Install-WingetPackage
+                if( ($packagesConfig | Get-Member 'winget') )
+                {
+                    $packagesConfig.winget | Where-Object { Test-BespokeItem $_ } | Install-WingetPackage
+                }
+
+                if( $IsWindows -and ($packagesConfig | Get-Member -Name 'appx') )
+                {
+                    $packagesConfig.appx | Where-Object { Test-BespokeItem $_ } | Install-AppxPackage
+                }
+            
+                if( $IsWindows -and ($packagesConfig | Get-Member -Name 'msi') )
+                {
+                    $packagesConfig.msi | Where-Object { Test-BespokeItem $_ } | Install-BespokeMsi
+                }
             }
 
-            if( $IsWindows -and ($packagesConfig | Get-Member -Name 'appx') )
+            if( $packagesConfig | Get-Member 'powershellModules' )
             {
-                $packagesConfig.appx | Where-Object { Test-BespokeItem $_ } | Install-AppxPackage
+                $packagesConfig.powershellModules | Where-Object { Test-BespokeItem $_ } | Install-PowerShellModule
             }
-        
-            if( $IsWindows -and ($packagesConfig | Get-Member -Name 'msi') )
+
+            if( $packagesConfig | Get-Member -Name 'zip' )
             {
-                $packagesConfig.msi | Where-Object { Test-BespokeItem $_ } | Install-BespokeMsi
+                $packagesConfig.zip | Where-Object { Test-BespokeItem $_ } | Install-BespokeZipFile
             }
         }
 
-        if( $packagesConfig | Get-Member 'powershellModules' )
+        if( $bespokeConfig | Get-Member -Name 'profiles' )
         {
-            $packagesConfig.powershellModules | Where-Object { Test-BespokeItem $_ } | Install-PowerShellModule
+            $bespokeConfig.profiles | Where-Object { Test-BespokeItem $_ } | Install-ShellProfile
         }
 
-        if( $packagesConfig | Get-Member -Name 'zip' )
+        $userInitPath = Join-Path -Path $bespokeRoot -ChildPath 'init.ps1'
+        if( (Test-Path -Path $userInitPath) )
         {
-            $packagesConfig.zip | Where-Object { Test-BespokeItem $_ } | Install-BespokeZipFile
+            Write-Information ($userInitPath | Resolve-Path -Relative)
+            & $userInitPath
         }
     }
-
-    if( $bespokeConfig | Get-Member -Name 'profiles' )
+    finally
     {
-        $bespokeConfig.profiles | Where-Object { Test-BespokeItem $_ } | Install-ShellProfile
-    }
-
-    $userInitPath = Join-Path -Path $bespokeRoot -ChildPath 'init.ps1'
-    if( (Test-Path -Path $userInitPath) )
-    {
-        Write-Information ($userInitPath | Resolve-Path -Relative)
-        & $userInitPath
+        [IO.Directory]::SetCurrentDirectory($originalPwd)
+        Pop-Location
     }
 }

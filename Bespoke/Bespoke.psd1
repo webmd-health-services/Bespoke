@@ -76,7 +76,6 @@
 
     # Functions to export from this module. Only list public function here.
     FunctionsToExport = @(
-        'Install-BespokeFileLink',
         'Invoke-Bespoke'
     )
 

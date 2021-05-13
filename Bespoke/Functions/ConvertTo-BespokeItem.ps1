@@ -8,11 +8,13 @@ function ConvertTo-BespokeItem
 
         [String]$DefaultPropertyName,
 
-        [hashtable]$Property
+        [hashtable]$Property = @{}
     )
 
     process
     {
+        Set-StrictMode -Version 'Latest'
+        
         Write-Debug "[ConvertTo-BespokeItem]  InputObject  [$($InputObject.GetType().Name)]"
         if( $InputObject -is [String] -or $InputObject -is [int] -or $InputObject -is [bool] -or $InputObject -is [DateTime] )
         {
@@ -39,7 +41,27 @@ function ConvertTo-BespokeItem
                 continue
             }
 
-            $InputObject | Add-Member -Name $propertyName -MemberType NoteProperty -Value $Property[$propertyName]
+            $InputObject |
+                Add-Member -Name $propertyName -MemberType NoteProperty -Value $Property[$propertyName]
+        }
+
+        $propertyNames = $InputObject | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 'Name'
+        foreach( $propertyName in $propertyNames )
+        {
+            $value = $InputObject.$propertyName
+            while( $value -match '~([^~]+?)~' )
+            {
+                $specialFolderName = $Matches[1]
+                $replacement = [Environment]::GetFolderPath($specialFolderName)
+                if( -not $replacement )
+                {
+                    $msg = "Special folder ""$($specialFolderName)"" is not available on this system."
+                    Write-Warning -Message $msg
+                    break
+                }
+                $value = $value -replace "~$([regex]::Escape($specialFolderName))~", $replacement
+            }
+            $InputObject.$propertyName = $value
         }
 
         return $InputObject
