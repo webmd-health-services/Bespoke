@@ -7,14 +7,10 @@ function Install-ShellProfile
         [Object]$InputObject
     )
 
-    begin
-    {
-        Set-StrictMode -Version 'Latest'
-        Write-Information 'Profiles'
-    }
-
     process
     {
+        Set-StrictMode -Version 'Latest'
+
         $properties = @{
             'shell' = '';
             'host' = 'CurrentUserAllHosts';
@@ -22,10 +18,12 @@ function Install-ShellProfile
         }
         $profileInfo = $InputObject | ConvertTo-BespokeItem -Property $properties
 
+        $title = ''
         switch( $profileInfo.shell )
         {
             'powershell'
             {
+                $subtitle = 'PowerShell'
                 $targetPath = Join-Path -Path $bespokeRoot -ChildPath $profileInfo.source
                 $hostName = $profileInfo.host
                 if( -not ($profile | Get-Member $profileInfo.host) )
@@ -55,7 +53,7 @@ function Install-ShellProfile
             $link = Get-Item -Path $linkPath
             if( $link.Target -contains $targetPath )
             {
-                Write-Information "    $($linkPath)"
+                $linkPath | Write-BespokeState -Title 'Profile' -Subtitle $subtitle -Installed
                 return
             }
 
@@ -63,7 +61,7 @@ function Install-ShellProfile
             return
         }
 
-        Write-Information "    + $($linkPath)"
+        $linkPath | Write-BespokeState -Title $title -NotInstalled
         New-Item -ItemType 'Hardlink' -Path $linkPath -Target $targetPath | Out-Null
     }
 }

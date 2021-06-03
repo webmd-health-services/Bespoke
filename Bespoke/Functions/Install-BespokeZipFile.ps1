@@ -7,15 +7,12 @@ function Install-BespokeZipFile
         [Object]$InputObject
     )
 
-    begin
+    process
     {
         Set-StrictMode -Version 'Latest'
 
-        Write-Information 'ZIP'
-    }
-
-    process
-    {
+        $title = 'ZIP'
+        
         $properties = @{
             'url' = '';
             'destination' = '';
@@ -25,8 +22,15 @@ function Install-BespokeZipFile
 
         $package = $InputObject | ConvertTo-BespokeItem -Property $properties
 
+        [uri]$url = $package.url
+        $subtitle = $url.Segments[-1]
+        if( [IO.Path]::GetExtension($subtitle) -ne '.zip' )
+        {
+            $subtitle = "$($subtitle).zip"
+        }
+
         $extractDir = 
-            Save-BespokeUrl -Url $package.Url -Checksum $package.checksum -Extension '.zip' |
+            Save-BespokeUrl -Url $url -Checksum $package.checksum -Extension '.zip' |
             Expand-BespokeArchive
 
         # Only copy specific items from the ZIP file.
@@ -40,7 +44,7 @@ function Install-BespokeZipFile
                 $source = Get-Item -Path $sourcePath -ErrorAction Ignore
                 if( -not $source )
                 {
-                    $msg = "Item ""$($item.path)"" does not exist in ZIP archive ""$($package.Url)""."
+                    $msg = "Item ""$($item.path)"" does not exist in ZIP archive ""$($url)""."
                     Write-Error -Message $msg
                     continue
                 }
@@ -54,12 +58,11 @@ function Install-BespokeZipFile
                 $destination = Get-Item -Path $destinationPath -ErrorAction Ignore
                 if( $destination )
                 {
-                    $infoMsg = "      $($destinationPath)"
                     if( $package.Checksum)
                     {
                         if( (Test-BespokeFileHash -Path $destination.FullName -Checksum $item.Checksum -ErrorAction Continue) )
                         {
-                            Write-Information $infoMsg
+                            $destinationPath | Write-BespokeState -Title $title -Subtitle $subtitle -Installed
                             continue
                         }
                     }
@@ -68,13 +71,13 @@ function Install-BespokeZipFile
                         if( $source.Length -eq $destination.Length -and `
                             $source.LastWriteTime -eq $destination.LastWriteTime )
                         {
-                            Write-Information $infoMsg
+                            $destinationPath | Write-BespokeState -Title $title -Subtitle $subtitle -Installed
                             continue
                         }
                     }
                 }
 
-                Write-Information "    + $($destinationPath)"
+                $destinationPath | Write-BespokeState -Title $title -Subtitle $subtitle -NotInstalled
                 $source | Copy-Item -Destination $destinationPath
             }
             return
@@ -91,7 +94,7 @@ function Install-BespokeZipFile
                 if( $source.Length -eq $destination.Length -and `
                     $source.LastWriteTime -eq $destination.LastWriteTime )
                 {
-                    Write-Information "      $($destinationPath)"
+                    $destinationPath | Write-BespokeState -Title $title -Subtitle $subtitle -Installed
                     continue
                 }
             }
@@ -101,7 +104,7 @@ function Install-BespokeZipFile
             {
                 New-Item -Path $destinationDirPath -ItemType 'Directory' | Out-Null
             }
-            Write-Information "    + $($destinationPath)"
+            $destinationPath | Write-BespokeState -Title $title -Subtitle $subtitle -NotInstalled
             $source | Copy-Item -Destination $destinationDirPath
         }
     }

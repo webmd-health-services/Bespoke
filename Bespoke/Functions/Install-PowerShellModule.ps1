@@ -11,7 +11,7 @@ function Install-PowerShellModule
     {
         Set-StrictMode -Version 'Latest'
 
-        Write-Information 'PowerShell Modules'
+        $title = 'PowerShell Modules'
 
         $pkgMgmtModules = @( 'PackageManagement', 'PowerShellGet' )
         foreach( $pkgMgmtModule in $pkgMgmtModules )
@@ -23,7 +23,7 @@ function Install-PowerShellModule
                 Select-Object -First 1
             if( $module )
             {
-                Write-Information "      $($module.Name) $($module.Version)"
+                "$($module.Name) $($module.Version)" | Write-BespokeState -Title $title -Installed
                 continue
             }
 
@@ -32,7 +32,7 @@ function Install-PowerShellModule
                 $module = Find-Module -Name $using:pkgMgmtModule | Select-Object -First 1
                 if( $module )
                 {
-                    Write-Information "    + $($pkgMgmtModule) [$($module.Version)]"
+                    "$($pkgMgmtModule) [$($module.Version)]" | Write-BespokeState -Title $title -NotInstalled
                     $module | Install-Module -Scope CurrentUser -AllowClobber -Force
                 }
                 else
@@ -104,9 +104,10 @@ function Install-PowerShellModule
             return
         }
 
+        $msg = "$($module.Name) $($module.Version)"
         if( Get-Module -Name $module.Name -ListAvailable | Where-Object 'Version' -EQ $module.Version )
         {
-            Write-Information "      $($module.Name) $($module.Version)"
+            $msg | Write-BespokeState -Title $title -Installed
             return
         }
 
@@ -119,7 +120,7 @@ function Install-PowerShellModule
             }
         }
         
-        Write-Information "    + $($module.Name) $($module.Version)"
+        $msg | Write-BespokeState -Title $title -Installed
         $module | Install-Module -Scope $package.scope @installSwitches
     }
 }

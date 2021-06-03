@@ -9,13 +9,15 @@ function Install-BespokeFileSystemItem
 
     begin
     {
-        Set-StrictMode -Version 'Latest'
-
-        Write-Information 'File System'
     }
 
     process
     {
+        Set-StrictMode -Version 'Latest'
+
+        $title = 'File System'
+        $subtitleFieldWidth = 10
+
         $properties = @{
             'path' = ''; 
             'type' = '';
@@ -41,14 +43,16 @@ function Install-BespokeFileSystemItem
                 Write-Error -Message $msg
                 return
             }
-    
+
             if( (Test-Path -Path $item.path) )
             {
-                Write-Information "      $($item.path)"
+                $item.path |
+                    Write-BespokeState -Title $title -Subtitle $item.type -SubtitleWidth $subtitleFieldWidth -Installed
                 return
             }
 
-            Write-Information "    + $($item.path)"
+            $item.path |
+                Write-BespokeState -Title $title -Subtitle $item.type -SubtitleWidth $subtitleFieldWidth -NotInstalled
             New-Item -Path $item.Path -ItemType $item.type | Out-Null
             return
         }
@@ -97,16 +101,25 @@ function Install-BespokeFileSystemItem
                     return
                 }
 
+                $targetPathMsg = "  -> $($targetPath)"
                 if( $destItem.Target -contains $targetPath )
                 {
-                    Write-Information "      $($linkPath)"
+                    $linkPath, $targetPathMsg |
+                        Write-BespokeState -Title $title `
+                                           -Subtitle $item.type `
+                                           -SubtitleWidth $subtitleFieldWidth `
+                                           -Installed
                     return
                 }
 
                 Remove-Item -Path $linkPath
             }
 
-            Write-Information "    + $($linkPath)"
+            $linkPath, $targetPathMsg | 
+                Write-BespokeState -Title $title `
+                                   -Subtitle $item.type `
+                                   -SubtitleWidth $subtitleFieldWidth `
+                                   -NotInstalled
             New-Item -ItemType 'HardLink' -Path $linkPath -Target $targetPath | Out-Null
         }
     }

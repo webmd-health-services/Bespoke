@@ -23,7 +23,6 @@ function Install-WingetPackage
         #             'Version' = $_.Substring(100).Trim() } 
         #     }
 
-        Write-Information 'winget'
         Install-Winget
     }
 
@@ -41,9 +40,10 @@ function Install-WingetPackage
             $listId = $package.listId
         }
 
+        $msg = $package.name
         if( (winget list --id $listId | Select-Object -Skip 4) )
         {
-            Write-Information "      $($package.name)"
+            $msg | Write-BespokeState -Title 'winget' -Installed
             return
         }
 
@@ -53,7 +53,7 @@ function Install-WingetPackage
             $installId = $package.searchId
         }
 
-        Write-Information "    + $($package.name)."
+        $msg | Write-BespokeState -Title 'winget' -NotInstalled
         winget install $installId
     }
 }

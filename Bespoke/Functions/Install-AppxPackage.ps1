@@ -7,16 +7,12 @@ function Install-AppxPackage
         [Object]$InputObject
     )
 
-    begin
+    process
     {
         Set-StrictMode -Version 'Latest'
 
-        Write-Information 'Windows Store'
-    }
-
-    process
-    {
         $properties = @{
+            
             'url' = '';
             'isBundle' = $false;
             'checksum' = '';
@@ -27,7 +23,7 @@ function Install-AppxPackage
 
         if( Get-AppxPackage -Name $package.name )
         {
-            Write-Information "      $($package.name)"
+            $package.name | Write-BespokeState -Title 'Appx' -Installed
             return
         }
 
@@ -37,7 +33,7 @@ function Install-AppxPackage
             $extension = '.appxbundle'
         }
 
-        Write-Information "    + $($package.name)"
+        $package.name | Write-BespokeState -Title 'Appx' -NotInstalled
         $appPkg = Save-BespokeUrl -Url $package.url -Checksum $package.checksum -Extension $extension
 
         $conditionalParams = @{}

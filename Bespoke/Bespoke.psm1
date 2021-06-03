@@ -47,6 +47,7 @@ if( -not $IsWindows )
 $dataPath = Join-path -Path $localDataPath -ChildPath $dataDirName
 $cachePath = Join-Path -Path $dataPath -ChildPath $cacheDirName
 $tempPath = Join-Path -Path $dataPath -ChildPath $tempDirName
+$lastStateMsgTitle = $null
 
 Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
 

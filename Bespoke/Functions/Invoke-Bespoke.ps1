@@ -17,6 +17,8 @@ function Invoke-Bespoke
     $InformationPreference = 'Continue'
     $ProgressPreference = 'SilentlyContinue'
 
+    $script:lastStateMsgTitle = ''
+
     foreach( $dataPath in @($cachePath, $tempPath) )
     {
         if( -not (Test-Path -Path $dataPath) )

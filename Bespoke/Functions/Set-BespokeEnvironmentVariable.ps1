@@ -7,15 +7,10 @@ function Set-BespokeEnvironmentVariable
         [Object]$InputObject
     )
 
-    begin
+    process
     {
         Set-StrictMode -Version 'Latest'
 
-        Write-Information 'Environment Variables'
-    }
-
-    process
-    {
         $property = @{
             'scope' = 'User';
             'vars' = [pscustomobject]@{};
@@ -66,13 +61,16 @@ function Set-BespokeEnvironmentVariable
                 $value = $value -join $item.listSeparator
             }
 
+            $msg = "$($name)  $($envVars.$name)"
+
             if( $currentValue -eq $value )
             {
-                Write-Information "      $($name)  $($envVars.$name)"
+                $msg | Write-BespokeState -Title 'Environment Variables' -Installed
                 continue
             }
 
-            Write-Information "    + $($name)  $($envVars.$name)"
+            $msg | Write-BespokeState -Title 'Environment Variables' -NotInstalled
+            
             $expandParam = @{}
             if( $item.expandEnvironmentNames )
             {

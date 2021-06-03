@@ -6,15 +6,12 @@ function Install-BespokeExe
         [Object]$InputObject
     )
 
-    begin
+    process
     {
         Set-StrictMode -Version 'Latest'
 
-        Write-Information 'EXE'
-    }
+        $title = 'EXE'
 
-    process
-    {
         $properties = @{
             'name' = '';
             'url' = '';
@@ -24,7 +21,7 @@ function Install-BespokeExe
 
         if( $package.programName -and (Get-CProgramInstallInfo -Name $package.programName) )
         {
-            Write-Information -Message "      $($package.installer)"
+            $package.Name | Write-BespokeState -Title $title -Installed
             return
         }
 
@@ -34,6 +31,7 @@ function Install-BespokeExe
             return 
         }
 
+        $package.Name | Write-BespokeState -Title $title -NotInstalled
         $exe = Save-BespokeUrl -Url $package.url -Checksum $package.checksum -Extension '.exe'
         Invoke-BespokeExe -Path $exe.FullName
     }

@@ -10,13 +10,12 @@ function Install-BespokeMsi
 
     begin
     {
-        Set-StrictMode -Version 'Latest'
-
-        Write-Information 'MSI'
     }
 
     process
     {
+        Set-StrictMode -Version 'Latest'
+
         $properties = @{
             'name' = '';
             'url' = '';
@@ -27,9 +26,11 @@ function Install-BespokeMsi
         }
         $package = $InputObject | ConvertTo-BespokeItem -Property $properties
 
+        $title = 'MSI'
+
         if( $package.programName -and (Get-CProgramInstallInfo -Name $package.programName -ErrorAction SilentlyContinue) )
         {
-            Write-Information -Message "      $($package.programName)"
+            $package.programName | Write-BespokeState -Title $title -Installed
             return
         }
 
@@ -91,7 +92,7 @@ function Install-BespokeMsi
                 }
             }
 
-            Write-Information "    + $($installer.Name)"
+            $installer.Name | Write-BespokeState -Title $title -NotInstalled
             switch( $type )
             {
                 'exe'
