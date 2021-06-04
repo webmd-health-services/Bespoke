@@ -83,6 +83,7 @@ function Install-BespokeFileSystemItem
                 return
             }
 
+            $targetPathMsg = "  -> $($targetPath)"
             if( (Test-Path -Path $linkPath) )
             {
                 $destItem = Get-Item -Path $linkPath
@@ -101,7 +102,6 @@ function Install-BespokeFileSystemItem
                     return
                 }
 
-                $targetPathMsg = "  -> $($targetPath)"
                 if( $destItem.Target -contains $targetPath )
                 {
                     $linkPath, $targetPathMsg |
