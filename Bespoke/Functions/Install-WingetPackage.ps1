@@ -43,7 +43,7 @@ function Install-WingetPackage
         $msg = $package.name
         if( (winget list --id $listId | Select-Object -Skip 4) )
         {
-            $msg | Write-BespokeState -Title 'winget' -Installed
+            $msg | Write-BespokeState -Title 'Winget' -Installed
             return
         }
 
@@ -53,7 +53,7 @@ function Install-WingetPackage
             $installId = $package.searchId
         }
 
-        $msg | Write-BespokeState -Title 'winget' -NotInstalled
+        $msg | Write-BespokeState -Title 'Winget' -NotInstalled
         winget install $installId
     }
 }

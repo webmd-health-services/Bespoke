@@ -126,6 +126,7 @@ function Invoke-Bespoke
             'msi' = 'Install-BespokeMsi';
             'powershellModules' = 'Install-PowerShellModule';
             'zip' = 'Install-BespokeZipFile';
+            'font' = 'Install-BespokeFont';
             'profile' = 'Install-ShellProfile';
         }
 

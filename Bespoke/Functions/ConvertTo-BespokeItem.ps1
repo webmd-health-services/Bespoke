@@ -15,6 +15,8 @@ function ConvertTo-BespokeItem
     {
         Set-StrictMode -Version 'Latest'
 
+        $InputObject | ConvertTo-Json -Depth 100 | Write-Debug
+
         Write-Debug "[ConvertTo-BespokeItem]  InputObject  [$($InputObject.GetType().Name)]"
         if( $InputObject -is [String] -or $InputObject -is [int] -or $InputObject -is [bool] -or $InputObject -is [DateTime] )
         {
