@@ -10,7 +10,9 @@ function Invoke-Bespoke
         [Parameter(Mandatory)]
         # The url to the Git repository containing your Bespoke configuration. This will be cloned to "your home 
         # directory in a ".bespoke" directory.
-        [Uri]$Url
+        [Uri]$Url,
+
+        [String[]]$Include
     )
 
     Set-StrictMode -Version 'Latest'
@@ -18,6 +20,10 @@ function Invoke-Bespoke
     $ProgressPreference = 'SilentlyContinue'
 
     $script:lastStateMsgTitle = ''
+    if( -not $Include )
+    {
+        $Include = @()
+    }
 
     foreach( $dataPath in @($cachePath, $tempPath) )
     {
@@ -112,53 +118,65 @@ function Invoke-Bespoke
             return
         }
 
+        $bespokeCmds = [ordered]@{
+            'fileSystem' = 'Install-BespokeFileSystemItem';
+            'env' = 'Set-BespokeEnvironmentVariable';
+            'winget' = 'Install-WingetPackage';
+            'appx' = 'Install-AppxPackage';
+            'msi' = 'Install-BespokeMsi';
+            'powershellModules' = 'Install-PowerShellModule';
+            'zip' = 'Install-BespokeZipFile';
+            'profile' = 'Install-ShellProfile';
+        }
+
+        $labels = @{
+            'fileSystem' = 'File System';
+            'env' = 'Environment Variables';
+            'msi' = 'MSI';
+            'powershellModules' = 'PowerShell Modules';
+            'zip' = 'ZIP';
+        }
+
         $bespokeConfig = Get-Content -Path $bespokeConfigPath | ConvertFrom-Json
 
-        if( $bespokeConfig | Get-Member 'fileSystem' )
+        foreach( $name in $bespokeCmds.Keys )
         {
-            $bespokeConfig.fileSystem | Where-Object { Test-BespokeItem $_ } | Install-BespokeFileSystemItem
-        }
+            $cmdName = $bespokeCmds[$name]
 
-        if( $bespokeConfig | Get-Member 'env' )
-        {
-            $bespokeConfig.env | Where-Object { Test-BespokeItem $_ } | Set-BespokeEnvironmentVariable
-        }
-
-        if( $bespokeConfig | Get-Member 'packages' )
-        {
-            $packagesConfig = $bespokeConfig.packages
-            if( $IsWindows )
+            if( -not $Include )
             {
-                if( ($packagesConfig | Get-Member 'winget') )
-                {
-                    $packagesConfig.winget | Where-Object { Test-BespokeItem $_ } | Install-WingetPackage
-                }
-
-                if( $IsWindows -and ($packagesConfig | Get-Member -Name 'appx') )
-                {
-                    $packagesConfig.appx | Where-Object { Test-BespokeItem $_ } | Install-AppxPackage
-                }
-            
-                if( $IsWindows -and ($packagesConfig | Get-Member -Name 'msi') )
-                {
-                    $packagesConfig.msi | Where-Object { Test-BespokeItem $_ } | Install-BespokeMsi
-                }
+                $Include = @()
+            }
+        
+            if( -not ($bespokeConfig | Get-Member -Name $name) -or `
+                     ($Include -and $Include -notcontains $name) )
+            {
+                Write-Debug "Skipping ""$($name)""."
+                continue
+            }
+    
+            $config = $bespokeConfig.$name
+            if( -not ($config | Test-BespokeItem) )
+            {
+                continue
             }
 
-            if( $packagesConfig | Get-Member 'powershellModules' )
+            $msg = $labels[$name]
+            if( -not $msg )
             {
-                $packagesConfig.powershellModules | Where-Object { Test-BespokeItem $_ } | Install-PowerShellModule
+                $msg = $name.Substring(0,1).ToUpper() + $name.Substring(1)
             }
+            $msg = "  [$($msg)]"
 
-            if( $packagesConfig | Get-Member -Name 'zip' )
+            Write-Information $msg
+            try
             {
-                $packagesConfig.zip | Where-Object { Test-BespokeItem $_ } | Install-BespokeZipFile
+                $config | & $cmdName
             }
-        }
-
-        if( $bespokeConfig | Get-Member -Name 'profiles' )
-        {
-            $bespokeConfig.profiles | Where-Object { Test-BespokeItem $_ } | Install-ShellProfile
+            finally
+            {
+                Write-Information $msg
+            }
         }
 
         $userInitPath = Join-Path -Path $bespokeRoot -ChildPath 'init.ps1'
