@@ -15,10 +15,10 @@ function Write-BespokeState
 
         [int]$IndentLevel = 0,
 
-        [Parameter(Mandatory, ParameterSetName='  ')]
+        [Parameter(Mandatory, ParameterSetName='   ')]
         [switch]$Installed,
 
-        [Parameter(Mandatory, ParameterSetName='+ ')]
+        [Parameter(Mandatory, ParameterSetName=' + ')]
         [switch]$NotInstalled
     )
 

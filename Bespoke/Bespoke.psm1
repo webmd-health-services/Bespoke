@@ -56,7 +56,7 @@ New-Alias -Name 'bespoke' -Value 'Invoke-Bespoke'
 $carbonFunctions = @(
     'Get-CProgramInstallInfo',
     'Set-CRegistryKeyValue',
-    'Invoke-CMsi'
+    'Install-CMsi'
 )
 $carbonModulePath = Join-Path -Path $PSScriptRoot -ChildPath 'Modules\Carbon'
 try

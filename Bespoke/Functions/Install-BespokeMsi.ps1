@@ -97,11 +97,11 @@ function Install-BespokeMsi
             {
                 'exe'
                 {
-                    Invoke-BespokeExe -Path $installerPath
+                    Invoke-BespokeExe -Path $installer.FullName
                 }
                 'msi'
                 {
-                    Install-CMsi -Path $installerPath
+                    Install-CMsi -Path $installer.FullName
                 }
             }
         }

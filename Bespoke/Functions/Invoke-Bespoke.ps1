@@ -128,6 +128,8 @@ function Invoke-Bespoke
             'zip' = 'Install-BespokeZipFile';
             'font' = 'Install-BespokeFont';
             'profile' = 'Install-ShellProfile';
+            'windowsFeature' = 'Install-BespokeWindowsFeature';
+            'windowsCapability' = 'Install-BespokeWindowsCapability';
         }
 
         $labels = @{
@@ -136,6 +138,8 @@ function Invoke-Bespoke
             'msi' = 'MSI';
             'powershellModules' = 'PowerShell Modules';
             'zip' = 'ZIP';
+            'windowsFeature' = 'Windows Feature';
+            'windowsCapability' = 'Windows Capability';
         }
 
         $bespokeConfig = Get-Content -Path $bespokeConfigPath | ConvertFrom-Json
@@ -167,7 +171,7 @@ function Invoke-Bespoke
             {
                 $msg = $name.Substring(0,1).ToUpper() + $name.Substring(1)
             }
-            $msg = "  [$($msg)]"
+            $msg = "   [$($msg)]"
 
             Write-Information $msg
             try

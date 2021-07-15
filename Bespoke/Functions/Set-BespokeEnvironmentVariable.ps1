@@ -76,7 +76,7 @@ function Set-BespokeEnvironmentVariable
             {
                 $expandParam['Expand'] = $true
             }
-            Set-CRegistryItem -Path $regPath -Name $name -String $value @expandParam
+            Set-CRegistryKeyValue -Path $regPath -Name $name -String $value @expandParam
         }
     }
 }
